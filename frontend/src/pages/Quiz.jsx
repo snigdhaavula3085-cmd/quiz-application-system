@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { AuthContext } from '../AuthContext';
 
 function Quiz() {
@@ -21,7 +21,7 @@ function Quiz() {
 
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/questions/subject/${subjectId}`);
+        const response = await api.get(`/api/questions/subject/${subjectId}`);
         setQuestions(response.data);
       } catch (error) {
         console.error('Error fetching questions', error);
@@ -61,7 +61,7 @@ function Quiz() {
     });
 
     try {
-      const response = await axios.post('http://localhost:8080/api/results', {
+      const response = await api.post('/api/results', {
         userId: user.id,
         subjectId: parseInt(subjectId),
         correctAnswers: correctCount,

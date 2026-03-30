@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { AuthContext } from '../AuthContext';
 
 function AdminDashboard() {
@@ -25,7 +25,7 @@ function AdminDashboard() {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/subjects');
+      const response = await api.get('/api/subjects');
       setSubjects(response.data);
     } catch (error) {
       console.error('Error fetching subjects', error);
@@ -34,7 +34,7 @@ function AdminDashboard() {
 
   const fetchQuestions = async (subjectId) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/questions/subject/${subjectId}`);
+      const response = await api.get(`/api/questions/subject/${subjectId}`);
       setQuestions(response.data);
     } catch (error) {
       console.error('Error fetching questions', error);
@@ -55,7 +55,7 @@ function AdminDashboard() {
   const handleCreateSubject = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/subjects', newSubject, {
+      await api.post('/api/subjects', newSubject, {
         headers: { 'X-Role': user.role }
       });
       setNewSubject({ name: '', description: '' });
@@ -75,10 +75,10 @@ function AdminDashboard() {
     try {
       const config = { headers: { 'X-Role': user.role } };
       if (editingQuestion) {
-        await axios.put(`http://localhost:8080/api/questions/${editingQuestion.id}`, newQuestion, config);
+        await api.put(`/api/questions/${editingQuestion.id}`, newQuestion, config);
         setEditingQuestion(null);
       } else {
-        await axios.post(`http://localhost:8080/api/questions/subject/${selectedSubjectId}`, newQuestion, config);
+        await api.post(`/api/questions/subject/${selectedSubjectId}`, newQuestion, config);
       }
       setNewQuestion({ text: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '' });
       fetchQuestions(selectedSubjectId);
@@ -91,7 +91,7 @@ function AdminDashboard() {
   const handleDeleteSubject = async (id) => {
     if (window.confirm("Are you sure? This deletes all questions inside it too.")) {
       try {
-        await axios.delete(`http://localhost:8080/api/subjects/${id}`, {
+        await api.delete(`/api/subjects/${id}`, {
           headers: { 'X-Role': user.role }
         });
         fetchSubjects();
@@ -108,7 +108,7 @@ function AdminDashboard() {
   const handleDeleteQuestion = async (id) => {
     if (window.confirm("Delete this question?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/questions/${id}`, {
+        await api.delete(`/api/questions/${id}`, {
           headers: { 'X-Role': user.role }
         });
         fetchQuestions(selectedSubjectId);

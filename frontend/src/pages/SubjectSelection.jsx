@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { AuthContext } from '../AuthContext';
 
 function SubjectSelection() {
@@ -17,7 +17,7 @@ function SubjectSelection() {
 
     const fetchSubjects = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/subjects');
+        const response = await api.get('/api/subjects');
         setSubjects(response.data);
       } catch (error) {
         console.error('Error fetching subjects', error);
