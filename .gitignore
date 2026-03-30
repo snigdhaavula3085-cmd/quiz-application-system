@@ -1,0 +1,36 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.jar
+.metadata
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+
+# Node / React
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+.eslintcache
+
+# Environment / Secret (Recommended to ignore if using real DB credentials)
+# backend/src/main/resources/application.properties
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
