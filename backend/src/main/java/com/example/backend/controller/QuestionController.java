@@ -24,7 +24,7 @@ public class QuestionController {
     // Admin endpoints
     @PostMapping("/subject/{subjectId}")
     public ResponseEntity<Question> addQuestion(@PathVariable Long subjectId, @RequestBody Question question, @RequestHeader(value = "X-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(questionService.addQuestion(subjectId, question));
@@ -32,7 +32,7 @@ public class QuestionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Question> updateQuestion(@PathVariable Long id, @RequestBody Question question, @RequestHeader(value = "X-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(questionService.updateQuestion(id, question));
@@ -40,7 +40,7 @@ public class QuestionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(@PathVariable Long id, @RequestHeader(value = "X-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
             return ResponseEntity.status(403).build();
         }
         questionService.deleteQuestion(id);

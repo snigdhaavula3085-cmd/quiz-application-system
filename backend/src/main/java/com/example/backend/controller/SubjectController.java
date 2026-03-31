@@ -29,7 +29,7 @@ public class SubjectController {
     // Admin endpoint
     @PostMapping
     public ResponseEntity<Subject> createSubject(@RequestBody Subject subject, @RequestHeader(value = "X-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(subjectService.createSubject(subject));
@@ -38,7 +38,7 @@ public class SubjectController {
     // Admin endpoint
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubject(@PathVariable Long id, @RequestHeader(value = "X-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
             return ResponseEntity.status(403).build();
         }
         subjectService.deleteSubject(id);

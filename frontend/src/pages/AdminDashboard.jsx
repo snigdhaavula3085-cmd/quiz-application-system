@@ -18,6 +18,8 @@ function AdminDashboard() {
   });
 
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [confirmDeleteSubjectId, setConfirmDeleteSubjectId] = useState(null);
+  const [confirmDeleteQuestionId, setConfirmDeleteQuestionId] = useState(null);
 
   useEffect(() => {
     fetchSubjects();
@@ -55,14 +57,24 @@ function AdminDashboard() {
   const handleCreateSubject = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/subjects', newSubject, {
-        headers: { 'X-Role': user.role }
+      if (!newSubject.name.trim()) {
+        alert("Subject name cannot be empty");
+        return;
+      }
+      const response = await api.post('/api/subjects', newSubject, {
+        headers: { 'X-Role': user?.role || '' }
       });
+      // Instantly update the UI
+      setSubjects([...subjects, response.data]);
       setNewSubject({ name: '', description: '' });
-      fetchSubjects();
       alert('Subject created successfully!');
     } catch (error) {
-      alert('Failed to create subject');
+      console.error('Create subject error:', error);
+      if (error.response?.status === 403) {
+        alert('Permission denied. You must be an admin.');
+      } else {
+        alert('Failed to create subject. Ensure the name is unique and the server is running.');
+      }
     }
   };
 
@@ -73,7 +85,7 @@ function AdminDashboard() {
       return;
     }
     try {
-      const config = { headers: { 'X-Role': user.role } };
+      const config = { headers: { 'X-Role': user?.role || '' } };
       if (editingQuestion) {
         await api.put(`/api/questions/${editingQuestion.id}`, newQuestion, config);
         setEditingQuestion(null);
@@ -89,32 +101,46 @@ function AdminDashboard() {
   };
 
   const handleDeleteSubject = async (id) => {
-    if (window.confirm("Are you sure? This deletes all questions inside it too.")) {
-      try {
-        await api.delete(`/api/subjects/${id}`, {
-          headers: { 'X-Role': user.role }
-        });
-        fetchSubjects();
-        if (selectedSubjectId === id.toString()) {
-          setSelectedSubjectId('');
-          setQuestions([]);
-        }
-      } catch (error) {
-        alert("Failed to delete subject");
+    try {
+      await api.delete(`/api/subjects/${id}`, {
+        headers: { 'X-Role': user?.role || '' }
+      });
+      
+      // Update UI instantly without waiting for fetch
+      setSubjects((prevSubjects) => prevSubjects.filter(sub => sub.id !== id));
+      
+      if (selectedSubjectId === id.toString()) {
+        setSelectedSubjectId('');
+        setQuestions([]);
+      }
+      
+      // Re-fetch in background to ensure sync
+      fetchSubjects();
+      setConfirmDeleteSubjectId(null);
+      
+      alert("Subject deleted successfully!");
+    } catch (error) {
+      console.error('Delete subject error:', error);
+      if (error.response?.status === 403) {
+        alert('Permission denied. You must be an admin to delete subjects.');
+      } else if (error.response?.status === 404) {
+        alert('Subject not found. It might have been deleted already.');
+        fetchSubjects(); // Refresh the list
+      } else {
+        alert("Failed to delete subject due to a server error. Please try again.");
       }
     }
   };
 
   const handleDeleteQuestion = async (id) => {
-    if (window.confirm("Delete this question?")) {
-      try {
-        await api.delete(`/api/questions/${id}`, {
-          headers: { 'X-Role': user.role }
-        });
-        fetchQuestions(selectedSubjectId);
-      } catch (error) {
-        alert("Delete failed");
-      }
+    try {
+      await api.delete(`/api/questions/${id}`, {
+        headers: { 'X-Role': user?.role || '' }
+      });
+      fetchQuestions(selectedSubjectId);
+      setConfirmDeleteQuestionId(null);
+    } catch (error) {
+      alert("Delete failed");
     }
   };
 
@@ -157,7 +183,25 @@ function AdminDashboard() {
               {subjects.map(sub => (
                 <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', marginBottom: '0.5rem', borderRadius: '8px', alignItems: 'center' }}>
                   <span style={{ fontWeight: '500' }}>{sub.name}</span>
-                  <button onClick={() => handleDeleteSubject(sub.id)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.2)', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                  <button 
+                    onClick={() => {
+                      if (confirmDeleteSubjectId === sub.id) {
+                        handleDeleteSubject(sub.id);
+                      } else {
+                        setConfirmDeleteSubjectId(sub.id);
+                        setTimeout(() => setConfirmDeleteSubjectId(null), 3000);
+                      }
+                    }} 
+                    style={{ 
+                      padding: '0.3rem 0.6rem', fontSize: '0.8rem', 
+                      background: confirmDeleteSubjectId === sub.id ? '#ff4d4d' : 'rgba(255,0,0,0.1)', 
+                      color: confirmDeleteSubjectId === sub.id ? 'white' : '#ff4d4d', 
+                      border: '1px solid rgba(255,0,0,0.2)', borderRadius: '4px', cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    {confirmDeleteSubjectId === sub.id ? 'Confirm?' : 'Delete'}
+                  </button>
                 </div>
               ))}
             </div>
@@ -220,7 +264,24 @@ function AdminDashboard() {
                   <p style={{ margin: 0, fontWeight: '500' }}>{q.text}</p>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button onClick={() => startEditQuestion(q)} style={{ background: 'var(--primary-color)', color: 'white', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-                    <button onClick={() => handleDeleteQuestion(q.id)} style={{ background: 'rgba(255,0,0,0.2)', color: '#ff4d4d', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+                    <button 
+                      onClick={() => {
+                        if (confirmDeleteQuestionId === q.id) {
+                          handleDeleteQuestion(q.id);
+                        } else {
+                          setConfirmDeleteQuestionId(q.id);
+                          setTimeout(() => setConfirmDeleteQuestionId(null), 3000);
+                        }
+                      }} 
+                      style={{ 
+                        background: confirmDeleteQuestionId === q.id ? '#ff4d4d' : 'rgba(255,0,0,0.2)', 
+                        color: confirmDeleteQuestionId === q.id ? 'white' : '#ff4d4d', 
+                        border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      {confirmDeleteQuestionId === q.id ? 'Sure?' : 'Delete'}
+                    </button>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>

@@ -68,7 +68,7 @@ function Quiz() {
         totalQuestions: questions.length
       });
       // Navigate to results page with data
-      navigate('/result', { state: { result: response.data } });
+      navigate('/result', { state: { result: response.data, questions, selectedAnswers } });
     } catch (error) {
       console.error('Error submitting quiz', error);
       alert('Failed to submit quiz.');

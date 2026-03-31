@@ -1,6 +1,9 @@
 package com.example.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "subjects")
@@ -14,6 +17,14 @@ public class Subject {
     private String name;
 
     private String description;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Question> questions = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizResult> quizResults = new ArrayList<>();
 
     public Subject() {}
 
@@ -29,4 +40,8 @@ public class Subject {
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public List<Question> getQuestions() { return questions; }
+    public void setQuestions(List<Question> questions) { this.questions = questions; }
+    public List<QuizResult> getQuizResults() { return quizResults; }
+    public void setQuizResults(List<QuizResult> quizResults) { this.quizResults = quizResults; }
 }

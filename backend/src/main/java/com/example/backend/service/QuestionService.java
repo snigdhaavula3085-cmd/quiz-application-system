@@ -18,7 +18,7 @@ public class QuestionService {
     private SubjectService subjectService;
 
     public List<Question> getQuestionsBySubject(Long subjectId) {
-        return questionRepository.findBySubjectId(subjectId);
+        return questionRepository.findBySubject_Id(subjectId);
     }
 
     public Question addQuestion(Long subjectId, Question question) {
