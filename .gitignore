@@ -21,8 +21,10 @@ frontend/dist-ssr/
 *.local
 .eslintcache
 
-# Environment / Secret (Recommended to ignore if using real DB credentials)
-# backend/src/main/resources/application.properties
+# Environment / Secrets
+.env
+backend/.env
+frontend/.env
 
 # IDEs
 .idea/
